@@ -1,0 +1,100 @@
+# .github/workflows/pr-check.yml（完整版）
+
+name: PR Quality Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # 1. 代码风格检查
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint        # ESLint
+      
+  # 2. TypeScript 类型检查
+  # type-check:
+  # runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #     - run: npm ci
+  #     - run: npm run type-check  # tsc --noEmit
+      
+  # 3. 单元测试 + 覆盖率
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #     - run: npm ci
+  #     - run: npm run test -- --coverage --reporters=json
+  #     - name: Coverage Gate
+  #       run: |
+  #         COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+  #         if [ $COVERAGE -lt 80 ]; then
+  #           echo "❌ Coverage $COVERAGE% is below 80% threshold"
+  #           exit 1
+  #         fi
+      
+  # CodeQL 安全分析（GitHub 内置）
+  codeql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # 7. 构建检查
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, codeql]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run build
+      
+  # 8. 综合报告
+  report:
+    runs-on: ubuntu-latest
+    needs: [lint, codeql, build]
+    if: always()
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              lint: '${{ needs.lint.result }}',
+              codeql: '${{ needs.codeql.result }}',
+              build: '${{ needs.build.result }}'
+            };
+            
+            const allPassed = Object.values(results).every(r => r === 'success');
+            
+            const report = `## 📋 PR Quality Report
+            
+            | Check | Status |
+            |-------|--------|
+            | Code Style (ESLint) | ${results.lint === 'success' ? '✅' : '❌'} |
+            | Code QL | ${results.codeql === 'success' ? '✅' : '❌'} |
+            | Build | ${results.build === 'success' ? '✅' : '❌'} |
+            
+            ${allPassed ? '### ✅ All quality checks passed!' : '### ❌ Some checks failed, please fix before merging.'}`;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: report
+            });
