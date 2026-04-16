@@ -56,6 +56,10 @@ jobs:
   # 8. 综合报告
   report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     needs: [lint, type-check, build]
     if: always()
     steps:
