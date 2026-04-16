@@ -16,8 +16,8 @@ export default [
       '*.tsbuildinfo',
       'auto-imports.d.ts',
       'components.d.ts',
-      '**/*.config.js',
-    ],
+      '**/*.config.js'
+    ]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -30,11 +30,11 @@ export default [
       parserOptions: {
         parser: tseslint.parser,
         ecmaVersion: 'latest',
-        sourceType: 'module',
+        sourceType: 'module'
       }
     },
     plugins: {
-      prettier,
+      prettier
     },
     rules: {
       'prettier/prettier': 'error',
@@ -44,7 +44,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-      'no-undef': 'off',
-    },
-  },
+      'no-undef': 'off'
+    }
+  }
 ]
