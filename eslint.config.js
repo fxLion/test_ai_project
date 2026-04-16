@@ -16,6 +16,7 @@ export default [
       '*.tsbuildinfo',
       'auto-imports.d.ts',
       'components.d.ts',
+      '**/*.config.js',
     ],
   },
   js.configs.recommended,
@@ -30,10 +31,7 @@ export default [
         parser: tseslint.parser,
         ecmaVersion: 'latest',
         sourceType: 'module',
-      },
-      globals: {
-        process: 'readonly',
-      },
+      }
     },
     plugins: {
       prettier,

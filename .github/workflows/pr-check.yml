@@ -46,12 +46,17 @@ jobs:
   # CodeQL 安全分析（GitHub 内置）
   codeql:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript, typescript
+          languages: javascript-typescript
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
@@ -77,6 +82,7 @@ jobs:
             const results = {
               lint: '${{ needs.lint.result }}',
               codeql: '${{ needs.codeql.result }}',
+              type-check: '${{ needs.type-check.result }}',
               build: '${{ needs.build.result }}'
             };
             
@@ -87,8 +93,8 @@ jobs:
             | Check | Status |
             |-------|--------|
             | Code Style (ESLint) | ${results.lint === 'success' ? '✅' : '❌'} |
+            | CodeQL | ${results.codeql === 'success' ? '✅' : '❌'} |
             | TypeScript Type Check | ${results.type-check === 'success' ? '✅' : '❌'} |
-            | Code QL | ${results.codeql === 'success' ? '✅' : '❌'} |
             | Build | ${results.build === 'success' ? '✅' : '❌'} |
             
             ${allPassed ? '### ✅ All quality checks passed!' : '### ❌ Some checks failed, please fix before merging.'}`;
