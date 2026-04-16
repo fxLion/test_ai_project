@@ -12,9 +12,6 @@ const zIndex = ref(3000)
 
 <template>
   <el-config-provider :size="size" :z-index="zIndex">
-    <el-icon class="is-loading">
-      <i-ep-circle-check-filled />
-    </el-icon>
     <header>
       <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
