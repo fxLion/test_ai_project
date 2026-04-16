@@ -18,16 +18,16 @@ jobs:
       - run: npm ci
       - run: npm run lint        # ESLint
       
-  # 2. TypeScript 类型检查
-  # type-check:
-  # runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #     - run: npm ci
-  #     - run: npm run type-check  # tsc --noEmit
+  # TypeScript 类型检查
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run type-check  # tsc --noEmit
       
-  # 3. 单元测试 + 覆盖率
+  # 单元测试 + 覆盖率
   # test:
   #   runs-on: ubuntu-latest
   #   steps:
@@ -51,14 +51,14 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript
+          languages: javascript, typescript
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
   # 7. 构建检查
   build:
     runs-on: ubuntu-latest
-    needs: [lint, codeql]
+    needs: [lint, type-check, codeql]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -68,7 +68,7 @@ jobs:
   # 8. 综合报告
   report:
     runs-on: ubuntu-latest
-    needs: [lint, codeql, build]
+    needs: [lint, type-check, codeql, build]
     if: always()
     steps:
       - uses: actions/github-script@v7
@@ -87,6 +87,7 @@ jobs:
             | Check | Status |
             |-------|--------|
             | Code Style (ESLint) | ${results.lint === 'success' ? '✅' : '❌'} |
+            | TypeScript Type Check | ${results.type-check === 'success' ? '✅' : '❌'} |
             | Code QL | ${results.codeql === 'success' ? '✅' : '❌'} |
             | Build | ${results.build === 'success' ? '✅' : '❌'} |
             
